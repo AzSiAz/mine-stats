@@ -8,6 +8,10 @@ import (
 	"time"
 )
 
+// Doc: https://wiki.vg/Query
+// Go implementation: https://github.com/SpencerSharkey/gomc
+// PHP implementation: https://github.com/xPaw/PHP-Minecraft-Query
+
 type BasicMinecraftStatus struct {
 }
 
