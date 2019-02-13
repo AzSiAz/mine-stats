@@ -1,3 +1,5 @@
+github.com/Tnze/gomcbot v0.0.0-20190211074657-f036f7db5473 h1:YMAf9ub8Hfc5CC5sQj39wskvVhS06rq5gsp5dnAzEts=
+github.com/Tnze/gomcbot v0.0.0-20190211074657-f036f7db5473/go.mod h1:KlxJ/6esFIo0FsAEnbVuUJmNH8GsNMwfRrddf3AK+aM=
 github.com/asdine/storm v2.1.2+incompatible h1:dczuIkyqwY2LrtXPz8ixMrU/OFgZp71kbKTHGrXYt/Q=
 github.com/asdine/storm v2.1.2+incompatible/go.mod h1:RarYDc9hq1UPLImuiXK3BIWPJLdIygvV3PsInK0FbVQ=
 go.etcd.io/bbolt v1.3.2 h1:Z/90sZLPOeCy2PwprqkFa25PdkusRzaj9P8zm/KNyvk=
