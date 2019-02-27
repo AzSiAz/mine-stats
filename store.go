@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/asdine/storm"
 	"mine-stats/models"
-	"mine-stats/protocol"
+	"mine-stats/protocol/minecraft"
 	"time"
 )
 
@@ -23,7 +23,7 @@ func NewStore(path string) (store *Store, err error) {
 	db, err := storm.Open(path)
 	err = initStorm(db)
 
-	store = &Store{ orm: db }
+	store = &Store{orm: db}
 
 	return
 }
@@ -34,12 +34,12 @@ func (s *Store) Close() (err error) {
 	return
 }
 
-func (s *Store) AddServer(rawServer *protocol.MinecraftServer) (server *models.Server, err error) {
+func (s *Store) AddServer(rawServer *minecraftProtocol.MinecraftServer) (server *models.Server, err error) {
 	server = &models.Server{
-		Name: rawServer.Name,
-		Port: rawServer.Port,
-		Url: rawServer.Address,
-		Timeout: rawServer.Timeout,
+		Name:      rawServer.Name,
+		Port:      rawServer.Port,
+		Url:       rawServer.Address,
+		Timeout:   rawServer.Timeout,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
@@ -51,10 +51,10 @@ func (s *Store) AddServer(rawServer *protocol.MinecraftServer) (server *models.S
 
 func (s *Store) AddStats(data *models.MinecraftStatus, serverID uint) (stats *models.Stats, err error) {
 	stats = &models.Stats{
-		Time: time.Now(),
+		Time:          time.Now(),
 		CurrentPlayer: data.PlayerInfo.Current,
-		MaxPlayer: data.PlayerInfo.Max,
-		ServerID: serverID,
+		MaxPlayer:     data.PlayerInfo.Max,
+		ServerID:      serverID,
 	}
 
 	err = s.orm.Save(stats)

@@ -1,4 +1,4 @@
-package packet
+package minecraftProtocol
 
 import (
 	"bufio"

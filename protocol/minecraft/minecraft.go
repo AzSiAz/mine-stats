@@ -1,4 +1,4 @@
-package protocol
+package minecraftProtocol
 
 import (
 	"bufio"
@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"mine-stats/models"
-	"mine-stats/protocol/packet"
 	"net"
 	"time"
 )
@@ -18,7 +17,7 @@ import (
 // PHP implementation: https://github.com/xPaw/PHP-Minecraft-Query
 
 type MinecraftServer struct {
-	Name string
+	Name    string
 	Address string
 	Port    uint16
 	Timeout time.Duration // in millisecond
@@ -26,7 +25,7 @@ type MinecraftServer struct {
 
 func NewMinecraftServer(name string, address string, port uint16, timeout time.Duration) *MinecraftServer {
 	return &MinecraftServer{
-		Name: name,
+		Name:    name,
 		Address: address,
 		Port:    port,
 		Timeout: timeout,
@@ -51,15 +50,15 @@ func (sm *MinecraftServer) Close(sock net.Conn) error {
 
 func (sm *MinecraftServer) SendHandshake(sock net.Conn) error {
 	var handShakeBuffer []byte
-	handShakeBuffer = append(handShakeBuffer, packet.PackVarInt(int32(47))...)
-	handShakeBuffer = append(handShakeBuffer, packet.PackString(sm.Address)...)
-	handShakeBuffer = append(handShakeBuffer, packet.PackUint16(sm.Port)...)
+	handShakeBuffer = append(handShakeBuffer, PackVarInt(int32(47))...)
+	handShakeBuffer = append(handShakeBuffer, PackString(sm.Address)...)
+	handShakeBuffer = append(handShakeBuffer, PackUint16(sm.Port)...)
 	handShakeBuffer = append(handShakeBuffer, byte(1))
-	handshakePacket := &packet.Packet{
+	handshakePacket := &Packet{
 		ID:   0,
 		Data: handShakeBuffer,
 	}
-	
+
 	_, err := sock.Write(handshakePacket.Pack(-1))
 	if err != nil {
 		return errors.New("error writing handshake packet: " + err.Error())
@@ -69,7 +68,7 @@ func (sm *MinecraftServer) SendHandshake(sock net.Conn) error {
 }
 
 func (sm *MinecraftServer) SendListPacket(sock net.Conn) error {
-	listPacket := &packet.Packet{
+	listPacket := &Packet{
 		ID:   0,
 		Data: []byte{},
 	}
@@ -84,7 +83,7 @@ func (sm *MinecraftServer) SendListPacket(sock net.Conn) error {
 func (sm *MinecraftServer) Query() (mc *models.MinecraftStatus, err error) {
 	mc = &models.MinecraftStatus{
 		Hostname: sm.Address,
-		Port: sm.Port,
+		Port:     sm.Port,
 	}
 
 	sock, err := sm.Connect()
@@ -94,19 +93,25 @@ func (sm *MinecraftServer) Query() (mc *models.MinecraftStatus, err error) {
 	defer sm.Close(sock)
 
 	err = sm.SendHandshake(sock)
-	if err != nil { return }
+	if err != nil {
+		return
+	}
 	err = sm.SendListPacket(sock)
-	if err != nil { return }
+	if err != nil {
+		return
+	}
 
 	defer sock.SetDeadline(time.Time{})
 	err = sock.SetDeadline(time.Now().Add(sm.Timeout * time.Second))
-	if err != nil { return }
+	if err != nil {
+		return
+	}
 
-	received, err := packet.RecvPacket(bufio.NewReader(sock), false)
+	received, err := RecvPacket(bufio.NewReader(sock), false)
 	if err != nil {
 		return nil, errors.New("failed to received list packet: " + err.Error())
 	}
-	s, err := packet.UnpackString(bytes.NewReader(received.Data))
+	s, err := UnpackString(bytes.NewReader(received.Data))
 	if err != nil {
 		return nil, errors.New("Error unpacking data" + err.Error())
 	}
