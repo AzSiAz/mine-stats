@@ -1,0 +1,16 @@
+# https://taskfile.org
+
+version: '2'
+
+vars:
+  EXECUTABLE: mine-stats{{exeExt}}
+  OUT_DIR: dist
+
+tasks:
+  build:
+    cmds:
+      - go generate
+      - go build -v -o {{.OUT_DIR}}/{{.EXECUTABLE}}
+  run:
+    cmds:
+      - go run .

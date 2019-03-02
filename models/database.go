@@ -10,6 +10,13 @@ import (
 //	slug
 //}
 
+type User struct {
+	ID int `storm:"id,increment"`
+	Username string `storm:"index,unique"`
+	Hash string `storm:"index"`
+	SessionID string `storm:"index"`
+}
+
 type Server struct {
 	ID int `storm:"id,increment"`
 	Name string `storm:"index"`
@@ -18,6 +25,8 @@ type Server struct {
 	Timeout time.Duration
 	CreatedAt time.Time
 	UpdatedAt time.Time
+	AddedBy int `storm:"index"`
+	Every time.Duration `storm:"index"`
 	//ServerTypesID int
 }
 

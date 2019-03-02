@@ -21,14 +21,16 @@ type MinecraftServer struct {
 	Address string
 	Port    uint16
 	Timeout time.Duration // in millisecond
+	Every time.Duration
 }
 
-func NewMinecraftServer(name string, address string, port uint16, timeout time.Duration) *MinecraftServer {
+func NewMinecraftServer(name string, address string, port uint16, timeout time.Duration, every time.Duration) *MinecraftServer {
 	return &MinecraftServer{
 		Name:    name,
 		Address: address,
 		Port:    port,
 		Timeout: timeout,
+		Every: every,
 	}
 }
 

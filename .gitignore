@@ -2,3 +2,5 @@
 db.bbolt
 mine-stats
 db.storm
+dist/
+ab0x.go
