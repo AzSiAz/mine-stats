@@ -35,7 +35,7 @@ func init() {
 		certmagic.Email = *emailSSL
 	}
 	if *prod {
-		//gin.SetMode(gin.ReleaseMode)
+	//	For later
 	}
 }
 
@@ -53,7 +53,7 @@ func main() {
 }
 
 func setupJobs(st *store.Store) {
-	srvs, err := st.GetMinecraftServer()
+	srvs, err := st.GetMinecraftServerList()
 	if err != nil {
 		os.Exit(1)
 	}
@@ -65,12 +65,15 @@ func setupJobs(st *store.Store) {
 
 func setupRouter(st *store.Store) *echo.Echo{
 	r := echo.New()
+	h := handler.NewHandler(st, *prod)
+
+	r.Pre(echoMiddleware.RemoveTrailingSlash())
 	r.Use(
 		echoMiddleware.RequestID(),
 		echoMiddleware.Logger(),
 		echoMiddleware.Recover(),
+		echoMiddleware.Secure(),
 	)
-	h := handler.NewHandler(st)
 
 	if *prod {
 		r.GET("/index.html", ServeIndex)
@@ -93,7 +96,14 @@ func setupRouter(st *store.Store) *echo.Echo{
 			authApi.GET("/logout", h.LogoutHandler, middleware.CheckAuth)
 			authApi.GET("/me", h.MeHandler, middleware.CheckAuth)
 		}
+		srvApi := api.Group("/server", middleware.CheckAuth)
+		{
+			srvApi.GET("", h.ListServer)
+			srvApi.POST("", h.AddServer)
+			srvApi.PUT("", h.UpdateServer)
+			srvApi.DELETE("", h.DeleteServer)
 
+		}
 	}
 
 	return r

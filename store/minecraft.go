@@ -36,7 +36,7 @@ func (s *Store) AddStats(data *models.MinecraftStatus, serverID uint) (stats *mo
 	return
 }
 
-func (s *Store) GetMinecraftServer() ([]models.Server, error) {
+func (s *Store) GetMinecraftServerList() ([]models.Server, error) {
 	var servers []models.Server
 	err := s.orm.All(&servers)
 	if err != nil {
