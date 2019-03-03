@@ -45,3 +45,36 @@ func (s *Store) GetMinecraftServerList() ([]models.Server, error) {
 
 	return servers, nil
 }
+
+func (s *Store) GetMinecraftServerByName(name string) (models.Server, error) {
+	var server models.Server
+
+	err := s.orm.One("Name", name, &server)
+	if err != nil {
+		return models.Server{}, err
+	}
+
+	return server, nil
+}
+
+func (s *Store) GetMinecraftServerByURL(URL string) (models.Server, error) {
+	var server models.Server
+
+	err := s.orm.One("Url", URL, &server)
+	if err != nil {
+		return models.Server{}, err
+	}
+
+	return server, nil
+}
+
+func (s *Store) GetMinecraftServerByID(id string) (models.Server, error) {
+	var server models.Server
+
+	err := s.orm.One("ID", id, &server)
+	if err != nil {
+		return models.Server{}, err
+	}
+
+	return server, nil
+}
