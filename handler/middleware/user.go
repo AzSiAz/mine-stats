@@ -20,6 +20,6 @@ func CheckAuth(next echo.HandlerFunc) echo.HandlerFunc {
 		}
 
 		c.Set("user", user)
-		return nil
+		return next(c)
 	}
 }

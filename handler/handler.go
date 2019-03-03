@@ -3,11 +3,13 @@ package handler
 import "mine-stats/store"
 
 type Handler struct {
-	store *store.Store
+	Store *store.Store
+	Prod bool
 }
 
-func NewHandler(st *store.Store) *Handler {
+func NewHandler(st *store.Store, prod bool) *Handler {
 	return &Handler{
-		store: st,
+		Store: st,
+		Prod: prod,
 	}
 }

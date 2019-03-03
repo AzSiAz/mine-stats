@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"github.com/gin-gonic/gin"
 	"github.com/labstack/echo/v4"
 	"mine-stats/models"
 	"net/http"
@@ -17,32 +16,34 @@ func (h *Handler) LoginHandler(c echo.Context) error {
 	var form AuthForm
 	err := c.Bind(&form)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]interface{}{
+		return c.JSON(http.StatusBadRequest, map[string]string{
 			"error": err.Error(),
 			"message": "Error on login",
 		})
 	}
 
-	user, err := h.store.VerifyLogin(form.Username, form.Password)
+	user, err := h.Store.VerifyLogin(form.Username, form.Password)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, gin.H{
+		return c.JSON(http.StatusBadRequest, map[string]string{
 			"error": err.Error(),
 			"message": "Error verifying who you are",
 		})
 	}
 
-	user, err = h.store.UpdateUserWithSessionID(user)
+	user, err = h.Store.UpdateUserWithSessionID(user)
 
 	sessionIDCookie := new(http.Cookie)
 	sessionIDCookie.Value = user.SessionID
 	sessionIDCookie.Name = "sessionID"
-	sessionIDCookie.Expires = time.Now().Add(24 * time.Hour * 31)
-	sessionIDCookie.Secure = true
-	sessionIDCookie.HttpOnly = true
+	if h.Prod {
+		sessionIDCookie.Expires = time.Now().Add(24 * time.Hour * 31)
+		sessionIDCookie.Secure = true
+		sessionIDCookie.HttpOnly = true
+	}
 
 	c.SetCookie(sessionIDCookie)
 
-	return c.JSON(http.StatusOK, gin.H{
+	return c.JSON(http.StatusOK, map[string]interface{}{
 		"username": user.Username,
 		"id": user.ID,
 	})
@@ -52,9 +53,11 @@ func (h *Handler) LogoutHandler(c echo.Context) error {
 	sessionIDCookie := new(http.Cookie)
 	sessionIDCookie.Value = ""
 	sessionIDCookie.Name = "sessionID"
-	sessionIDCookie.Expires = time.Now().Add(-1 * time.Hour)
-	sessionIDCookie.Secure = true
-	sessionIDCookie.HttpOnly = true
+	if h.Prod {
+		sessionIDCookie.Expires = time.Now().Add(-1 * time.Hour)
+		sessionIDCookie.Secure = true
+		sessionIDCookie.HttpOnly = true
+	}
 
 	c.SetCookie(sessionIDCookie)
 	return c.NoContent(http.StatusOK)
@@ -71,7 +74,7 @@ func (h *Handler) SignUpHandler(c echo.Context) error {
 		})
 	}
 
-	_, err = h.store.AddUser(form.Username, form.Password)
+	_, err = h.Store.AddUser(form.Username, form.Password)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{
 			"Error": err.Error(),
@@ -88,7 +91,7 @@ func (h *Handler) SignUpHandler(c echo.Context) error {
 func (h *Handler) MeHandler(c echo.Context) error {
 	user := c.Get("user").(*models.User)
 
-	return c.JSON(http.StatusOK, gin.H{
+	return c.JSON(http.StatusOK, map[string]interface{}{
 		"ID": user.ID,
 		"username": user.Username,
 	})
