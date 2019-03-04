@@ -20,7 +20,7 @@ type User struct {
 type Server struct {
 	ID int `storm:"id,increment"`
 	Name string `storm:"index"`
-	Url string `storm:"unique,index"`
+	Url string `storm:"index,unique"`
 	Port uint16
 	Timeout time.Duration
 	CreatedAt time.Time

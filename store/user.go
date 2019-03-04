@@ -71,7 +71,7 @@ func (s *Store) VerifyLogin(username, plainPwd string) (user *models.User, err e
 	return
 }
 
-func (s *Store) UpdateUserWithSessionID(user *models.User) (*models.User, error) {
+func (s *Store) UpdateUserSessionIDAdd(user *models.User) (*models.User, error) {
 	id, err := gonanoid.Nanoid(32)
 	if err != nil {
 		return nil, err
@@ -80,6 +80,17 @@ func (s *Store) UpdateUserWithSessionID(user *models.User) (*models.User, error)
 	user.SessionID = id
 
 	err = s.orm.Update(user)
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
+func (s *Store) UpdateUserSessionIDRemove(user *models.User) (*models.User, error) {
+	user.SessionID = ""
+
+	err := s.orm.Update(user)
 	if err != nil {
 		return nil, err
 	}

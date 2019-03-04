@@ -30,7 +30,7 @@ func (h *Handler) LoginHandler(c echo.Context) error {
 		})
 	}
 
-	user, err = h.Store.UpdateUserWithSessionID(user)
+	user, err = h.Store.UpdateUserSessionIDAdd(user)
 
 	sessionIDCookie := new(http.Cookie)
 	sessionIDCookie.Value = user.SessionID
@@ -59,7 +59,17 @@ func (h *Handler) LogoutHandler(c echo.Context) error {
 		sessionIDCookie.HttpOnly = true
 	}
 
+	user := c.Get("user").(*models.User)
+	user, err := h.Store.UpdateUserSessionIDRemove(user)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": err.Error(),
+			"message": "Error verifying who you are",
+		})
+	}
+
 	c.SetCookie(sessionIDCookie)
+
 	return c.NoContent(http.StatusOK)
 }
 

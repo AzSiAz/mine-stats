@@ -5,6 +5,7 @@ go 1.12
 require (
 	github.com/DataDog/zstd v1.3.5 // indirect
 	github.com/Sereal/Sereal v0.0.0-20190203221631-e99c7e10fca4 // indirect
+	github.com/UnnoTed/fileb0x v1.1.3 // indirect
 	github.com/asdine/storm v2.1.2+incompatible
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/kr/pretty v0.1.0 // indirect

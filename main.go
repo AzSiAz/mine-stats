@@ -59,8 +59,13 @@ func setupJobs(st *store.Store) {
 	}
 
 	for _, srv := range srvs {
-		println(srv.Name)
+		//println(srv.Name)
+		log.WithFields(log.Fields{
+			"server_name": srv.Name,
+			"url": srv.Url,
+		}).Infoln("Doing something with server")
 	}
+	log.Infoln("Done loading jobs")
 }
 
 func setupRouter(st *store.Store) *echo.Echo{
@@ -99,9 +104,10 @@ func setupRouter(st *store.Store) *echo.Echo{
 		srvApi := api.Group("/server", middleware.CheckAuth)
 		{
 			srvApi.GET("", h.ListServer)
+			srvApi.GET("/:id", h.OneServer)
 			srvApi.POST("", h.AddServer)
 			srvApi.PUT("", h.UpdateServer)
-			srvApi.DELETE("", h.DeleteServer)
+			srvApi.DELETE("/:id", h.DeleteServer)
 
 		}
 	}

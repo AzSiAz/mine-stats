@@ -68,7 +68,7 @@ func (s *Store) GetMinecraftServerByURL(URL string) (models.Server, error) {
 	return server, nil
 }
 
-func (s *Store) GetMinecraftServerByID(id string) (models.Server, error) {
+func (s *Store) GetMinecraftServerByID(id int) (models.Server, error) {
 	var server models.Server
 
 	err := s.orm.One("ID", id, &server)
@@ -77,4 +77,18 @@ func (s *Store) GetMinecraftServerByID(id string) (models.Server, error) {
 	}
 
 	return server, nil
+}
+
+func (s *Store) DeleteServerByID(id int) error {
+	srv, err := s.GetMinecraftServerByID(id)
+	if err != nil {
+		return err
+	}
+
+	err = s.orm.DeleteStruct(srv)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
