@@ -121,6 +121,8 @@ func (h *Handler) UpdateServer(c echo.Context) error {
 }
 
 func (h *Handler) DeleteServer(c echo.Context) error {
+	user := c.Get("user").(*models.User)
+
 	idParam := c.Param("id")
 	if idParam == "" {
 		return c.JSON(http.StatusBadRequest, Response{
@@ -134,7 +136,7 @@ func (h *Handler) DeleteServer(c echo.Context) error {
 		})
 	}
 
-	err = h.Store.DeleteServerByID(id)
+	err = h.Store.DeleteServerForUserByID(user.ID, id)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, Response{
 			"error":   "error deleting server, try again",
