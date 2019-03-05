@@ -3,6 +3,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"github.com/labstack/echo/v4"
 	echoMiddleware "github.com/labstack/echo/v4/middleware"
@@ -15,6 +16,8 @@ import (
 	"mine-stats/store"
 	"net/http"
 	"os"
+	"os/signal"
+	"time"
 )
 
 var (
@@ -50,8 +53,12 @@ func main() {
 	rtr := setupRouter(st)
 	go launchWebServer(rtr)
 
-	t := make(chan struct{})
-	<-t
+	<-exit()
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := rtr.Shutdown(ctx); err != nil {
+		log.WithError(err).Fatalln()
+	}
 }
 
 func setupJobs(st *store.Store) {
@@ -109,15 +116,20 @@ func setupRouter(st *store.Store) *echo.Echo {
 			srvApi.POST("", h.AddServer)
 			srvApi.PUT("", h.UpdateServer)
 			srvApi.DELETE("/:id", h.DeleteServer)
+
+			//statsApi := srvApi.Group("/stats")
+			//{
+			//
+			//}
 		}
 		admApi := api.Group("/admin", middleware.CheckAuth, middleware.CheckAdmin)
 		{
-			admApi.GET("/server", h.ListOwnServer)
-			admApi.GET("/server/:id", h.ListOwnServer)
-			admApi.DELETE("/server/:id", h.ListOwnServer)
-			admApi.GET("/user", h.ListOwnServer)
-			admApi.GET("/user/:id", h.ListOwnServer)
-			admApi.DELETE("/user/:id", h.ListOwnServer)
+			admApi.GET("/server", h.AdminListServer)
+			admApi.GET("/server/:id", h.AdminOneServer)
+			admApi.DELETE("/server/:id", h.AdminDeleteServer)
+			admApi.GET("/user", h.AdminListUser)
+			admApi.GET("/user/:id", h.AdminOneUser)
+			admApi.DELETE("/user/:id", h.AdminDeleteUser)
 		}
 	}
 
@@ -143,4 +155,12 @@ func openStore() *store.Store {
 	log.Info("Database opened")
 
 	return st
+}
+
+func exit() <-chan os.Signal {
+	ch := make(chan os.Signal)
+	signal.Notify(ch, os.Interrupt)
+	signal.Notify(ch, os.Kill)
+
+	return ch
 }

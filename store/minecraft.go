@@ -117,6 +117,20 @@ func (s *Store) DeleteServerByID(id int) error {
 	return nil
 }
 
+func (s *Store) DeleteServerForUserByID(userID, serverID int) error {
+	srv, err := s.GetMinecraftServerForUserByID(userID, serverID)
+	if err != nil {
+		return err
+	}
+
+	err = s.Orm.DeleteStruct(&srv)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (s *Store) UpdateServer(userID, serverID int, newData models.Server) (models.Server, error) {
 	srv, err := s.GetMinecraftServerForUserByID(userID, serverID)
 	if err != nil {

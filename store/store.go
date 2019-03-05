@@ -59,6 +59,9 @@ func (s *Store) checkAlreadyAddedAdmin() {
 	if err != nil {
 		if err == storm.ErrNotFound {
 			s.AdminAdded = false
+			if s.FirstAdmin {
+				logrus.Infoln("First signup will be an admin be careful")
+			}
 			return
 		}
 		logrus.Fatalln("Can't check if there is already an admin, try again or remove first_admin flag")

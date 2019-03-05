@@ -18,6 +18,16 @@ func CheckPasswordWithHash(hash, plainPwd string) (bool, error) {
 	return true, nil
 }
 
+func (s *Store) GetUserList() (*[]models.User, error) {
+	var users []models.User
+	err := s.Orm.All(&users)
+	if err != nil {
+		return nil, err
+	}
+
+	return &users, nil
+}
+
 func (s *Store) GetUserByUsername(username string) (*models.User, error) {
 	var user models.User
 	err := s.Orm.One("Username", username, &user)
@@ -102,4 +112,18 @@ func (s *Store) UpdateUserSessionIDRemove(user *models.User) (*models.User, erro
 	}
 
 	return user, nil
+}
+
+func (s *Store) DeleteUserByID(userID int) error {
+	usr, err := s.GetUserByID(userID)
+	if err != nil {
+		return err
+	}
+
+	err = s.Orm.DeleteStruct(&usr)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
