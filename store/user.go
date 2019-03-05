@@ -7,30 +7,6 @@ import (
 	"mine-stats/models"
 )
 
-func (s *Store) GetUserByUsername(username string) (*models.User, error) {
-	var user models.User
-	err := s.orm.One("Username", username, &user)
-
-	return &user, err
-}
-
-func (s *Store) GetUserBySessionID(sessionID string) (*models.User, error) {
-	if sessionID == "" {
-		return nil, errors.New("empty cookie")
-	}
-	var user models.User
-	err := s.orm.One("SessionID", sessionID, &user)
-
-	return &user, err
-}
-
-func (s *Store) GetUserByID(ID int) (*models.User, error) {
-	var user models.User
-	err := s.orm.One("ID", ID, &user)
-
-	return &user, err
-}
-
 func CheckPasswordWithHash(hash, plainPwd string) (bool, error) {
 	byteHash := []byte(hash)
 	bytePlainPwd := []byte(plainPwd)
@@ -42,6 +18,30 @@ func CheckPasswordWithHash(hash, plainPwd string) (bool, error) {
 	return true, nil
 }
 
+func (s *Store) GetUserByUsername(username string) (*models.User, error) {
+	var user models.User
+	err := s.Orm.One("Username", username, &user)
+
+	return &user, err
+}
+
+func (s *Store) GetUserBySessionID(sessionID string) (*models.User, error) {
+	if sessionID == "" {
+		return nil, errors.New("empty cookie")
+	}
+	var user models.User
+	err := s.Orm.One("SessionID", sessionID, &user)
+
+	return &user, err
+}
+
+func (s *Store) GetUserByID(ID int) (*models.User, error) {
+	var user models.User
+	err := s.Orm.One("ID", ID, &user)
+
+	return &user, err
+}
+
 func (s *Store) AddUser(username, password string) (user *models.User, err error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
@@ -49,10 +49,16 @@ func (s *Store) AddUser(username, password string) (user *models.User, err error
 	}
 	user = &models.User{
 		Username: username,
-		Hash: string(hash),
+		Role:     models.UserRole,
+		Hash:     string(hash),
 	}
 
-	err = s.orm.Save(user)
+	if s.FirstAdmin && !s.AdminAdded {
+		user.Role = models.AdminRole
+		s.AdminAdded = true
+	}
+
+	err = s.Orm.Save(user)
 
 	return
 }
@@ -79,7 +85,7 @@ func (s *Store) UpdateUserSessionIDAdd(user *models.User) (*models.User, error) 
 
 	user.SessionID = id
 
-	err = s.orm.Update(user)
+	err = s.Orm.Update(user)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +96,7 @@ func (s *Store) UpdateUserSessionIDAdd(user *models.User) (*models.User, error) 
 func (s *Store) UpdateUserSessionIDRemove(user *models.User) (*models.User, error) {
 	user.SessionID = ""
 
-	err := s.orm.Update(user)
+	err := s.Orm.Update(user)
 	if err != nil {
 		return nil, err
 	}

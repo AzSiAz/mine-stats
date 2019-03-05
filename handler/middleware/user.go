@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"github.com/labstack/echo/v4"
+	"mine-stats/models"
 	"mine-stats/store"
 	"net/http"
 )
@@ -20,6 +21,18 @@ func CheckAuth(next echo.HandlerFunc) echo.HandlerFunc {
 		}
 
 		c.Set("user", user)
+		return next(c)
+	}
+}
+
+func CheckAdmin(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		user := c.Get("user").(*models.User)
+
+		if user.Role != models.AdminRole {
+			return c.NoContent(http.StatusForbidden)
+		}
+
 		return next(c)
 	}
 }

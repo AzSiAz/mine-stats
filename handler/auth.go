@@ -16,21 +16,26 @@ func (h *Handler) LoginHandler(c echo.Context) error {
 	var form AuthForm
 	err := c.Bind(&form)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"error": err.Error(),
+		return c.JSON(http.StatusBadRequest, Response{
+			"error":   err.Error(),
 			"message": "Error on login",
 		})
 	}
 
 	user, err := h.Store.VerifyLogin(form.Username, form.Password)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"error": err.Error(),
+		return c.JSON(http.StatusBadRequest, Response{
+			"error":   err.Error(),
 			"message": "Error verifying who you are",
 		})
 	}
 
 	user, err = h.Store.UpdateUserSessionIDAdd(user)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, Response{
+			"message": "Error creating login session",
+		})
+	}
 
 	sessionIDCookie := new(http.Cookie)
 	sessionIDCookie.Value = user.SessionID
@@ -43,9 +48,9 @@ func (h *Handler) LoginHandler(c echo.Context) error {
 
 	c.SetCookie(sessionIDCookie)
 
-	return c.JSON(http.StatusOK, map[string]interface{}{
+	return c.JSON(http.StatusOK, Response{
 		"username": user.Username,
-		"id": user.ID,
+		"id":       user.ID,
 	})
 }
 
@@ -62,8 +67,8 @@ func (h *Handler) LogoutHandler(c echo.Context) error {
 	user := c.Get("user").(*models.User)
 	user, err := h.Store.UpdateUserSessionIDRemove(user)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"error": err.Error(),
+		return c.JSON(http.StatusBadRequest, Response{
+			"error":   err.Error(),
 			"message": "Error verifying who you are",
 		})
 	}
@@ -78,22 +83,22 @@ func (h *Handler) SignUpHandler(c echo.Context) error {
 	var form AuthForm
 	err := c.Bind(&form)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"error": err.Error(),
+		return c.JSON(http.StatusBadRequest, Response{
+			"error":   err.Error(),
 			"message": "Error signing up",
 		})
 	}
 
 	_, err = h.Store.AddUser(form.Username, form.Password)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"Error": err.Error(),
+		return c.JSON(http.StatusBadRequest, Response{
+			"Error":   err.Error(),
 			"message": "Error signing up with this info, try again",
 		})
 	}
 
-	return c.JSON(http.StatusOK, map[string]interface{}{
-		"error": false,
+	return c.JSON(http.StatusOK, Response{
+		"error":   false,
 		"message": "Sign Up successful try login now",
 	})
 }
@@ -101,8 +106,8 @@ func (h *Handler) SignUpHandler(c echo.Context) error {
 func (h *Handler) MeHandler(c echo.Context) error {
 	user := c.Get("user").(*models.User)
 
-	return c.JSON(http.StatusOK, map[string]interface{}{
-		"ID": user.ID,
+	return c.JSON(http.StatusOK, Response{
+		"ID":       user.ID,
 		"username": user.Username,
 	})
 }

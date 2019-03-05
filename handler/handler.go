@@ -9,6 +9,8 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+type Response map[string]interface{}
+
 type Handler struct {
 	Store *store.Store
 	Prod  bool

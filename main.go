@@ -23,6 +23,7 @@ var (
 	emailSSL   = flag.String("email_ssl", "stef@azsiaz.tech", "use it to change default email address to use for ssl certificate")
 	stagingSSL = flag.Bool("staging_ssl", false, "use a staging env on for certmagic lib on Let's Encrypt")
 	metrics    = flag.Bool("metrics", false, "expose a prometheus metrics endpoint")
+	firstAdmin = flag.Bool("first_admin", false, "First signup is an admin user")
 )
 
 func init() {
@@ -60,7 +61,6 @@ func setupJobs(st *store.Store) {
 	}
 
 	for _, srv := range srvs {
-		//println(srv.Name)
 		log.WithFields(log.Fields{
 			"server_name": srv.Name,
 			"url":         srv.Url,
@@ -104,11 +104,20 @@ func setupRouter(st *store.Store) *echo.Echo {
 		}
 		srvApi := api.Group("/server", middleware.CheckAuth)
 		{
-			srvApi.GET("", h.ListServer)
-			srvApi.GET("/:id", h.OneServer)
+			srvApi.GET("", h.ListOwnServer)
+			srvApi.GET("/:id", h.OneOwnServer)
 			srvApi.POST("", h.AddServer)
 			srvApi.PUT("", h.UpdateServer)
 			srvApi.DELETE("/:id", h.DeleteServer)
+		}
+		admApi := api.Group("/admin", middleware.CheckAuth, middleware.CheckAdmin)
+		{
+			admApi.GET("/server", h.ListOwnServer)
+			admApi.GET("/server/:id", h.ListOwnServer)
+			admApi.DELETE("/server/:id", h.ListOwnServer)
+			admApi.GET("/user", h.ListOwnServer)
+			admApi.GET("/user/:id", h.ListOwnServer)
+			admApi.DELETE("/user/:id", h.ListOwnServer)
 		}
 	}
 
@@ -125,7 +134,7 @@ func launchWebServer(rtr *echo.Echo) {
 
 func openStore() *store.Store {
 	log.Info("Opening database")
-	st, err := store.NewStore("db.storm")
+	st, err := store.NewStore("db.storm", *firstAdmin)
 	if err != nil {
 		log.
 			WithError(err).

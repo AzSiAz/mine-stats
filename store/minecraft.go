@@ -1,6 +1,7 @@
 package store
 
 import (
+	"github.com/asdine/storm/q"
 	"mine-stats/models"
 	minecraftProtocol "mine-stats/protocol/minecraft"
 	"time"
@@ -17,7 +18,7 @@ func (s *Store) AddServer(rawServer *minecraftProtocol.MinecraftServer, userID i
 		AddedBy:   userID,
 	}
 
-	err = s.orm.Save(server)
+	err = s.Orm.Save(server)
 
 	return
 }
@@ -30,14 +31,14 @@ func (s *Store) AddStats(data *models.MinecraftStatus, serverID uint) (stats *mo
 		ServerID:      serverID,
 	}
 
-	err = s.orm.Save(stats)
+	err = s.Orm.Save(stats)
 
 	return
 }
 
 func (s *Store) GetMinecraftServerList() ([]models.Server, error) {
 	var servers []models.Server
-	err := s.orm.All(&servers)
+	err := s.Orm.All(&servers)
 	if err != nil {
 		return nil, err
 	}
@@ -45,10 +46,34 @@ func (s *Store) GetMinecraftServerList() ([]models.Server, error) {
 	return servers, nil
 }
 
+func (s *Store) GetMinecraftServerListByUser(userID int) ([]models.Server, error) {
+	var servers []models.Server
+	err := s.Orm.Find("AddedBy", userID, &servers)
+	if err != nil {
+		return nil, err
+	}
+
+	return servers, nil
+}
+
+func (s *Store) GetMinecraftServerForUserByID(userID, serverID int) (models.Server, error) {
+	var server models.Server
+	err := s.Orm.Select(q.And(
+		q.Eq("ID", serverID),
+		q.Eq("AddedBy", userID),
+	)).Limit(1).Find(&server)
+
+	if err != nil {
+		return models.Server{}, err
+	}
+
+	return server, nil
+}
+
 func (s *Store) GetMinecraftServerByName(name string) (models.Server, error) {
 	var server models.Server
 
-	err := s.orm.One("Name", name, &server)
+	err := s.Orm.One("Name", name, &server)
 	if err != nil {
 		return models.Server{}, err
 	}
@@ -59,7 +84,7 @@ func (s *Store) GetMinecraftServerByName(name string) (models.Server, error) {
 func (s *Store) GetMinecraftServerByURL(URL string) (models.Server, error) {
 	var server models.Server
 
-	err := s.orm.One("Url", URL, &server)
+	err := s.Orm.One("Url", URL, &server)
 	if err != nil {
 		return models.Server{}, err
 	}
@@ -70,7 +95,7 @@ func (s *Store) GetMinecraftServerByURL(URL string) (models.Server, error) {
 func (s *Store) GetMinecraftServerByID(id int) (models.Server, error) {
 	var server models.Server
 
-	err := s.orm.One("ID", id, &server)
+	err := s.Orm.One("ID", id, &server)
 	if err != nil {
 		return models.Server{}, err
 	}
@@ -84,10 +109,30 @@ func (s *Store) DeleteServerByID(id int) error {
 		return err
 	}
 
-	err = s.orm.DeleteStruct(&srv)
+	err = s.Orm.DeleteStruct(&srv)
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (s *Store) UpdateServer(userID, serverID int, newData models.Server) (models.Server, error) {
+	srv, err := s.GetMinecraftServerForUserByID(userID, serverID)
+	if err != nil {
+		return models.Server{}, err
+	}
+
+	srv.Name = newData.Name
+	srv.Timeout = newData.Timeout
+	srv.Port = newData.Port
+	srv.Every = newData.Every
+	srv.Url = newData.Url
+
+	err = s.Orm.Update(&srv)
+	if err != nil {
+		return models.Server{}, err
+	}
+
+	return srv, nil
 }

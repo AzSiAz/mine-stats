@@ -2,31 +2,19 @@ package store
 
 import (
 	"github.com/asdine/storm"
+	"github.com/sirupsen/logrus"
 	"mine-stats/models"
+	"os"
 )
 
 type Store struct {
-	orm *storm.DB
+	AdminAdded bool
+	FirstAdmin bool
+	Orm        *storm.DB
 }
 
 var store *Store
 var initDone = false
-
-func NewStore(path string) (*Store, error) {
-	db, err := storm.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	err = initStorm(db)
-	if err != nil {
-		return nil, err
-	}
-
-	store = &Store{orm: db}
-	initDone = true
-
-	return store, nil
-}
 
 func GetStore() *Store {
 	if initDone {
@@ -36,17 +24,51 @@ func GetStore() *Store {
 	}
 }
 
-func initStorm(db *storm.DB) (err error) {
+func NewStore(path string, firstAdmin bool) (*Store, error) {
+	db, err := storm.Open(path)
+	if err != nil {
+		return nil, err
+	}
+
+	store = &Store{Orm: db, FirstAdmin: firstAdmin}
+
+	err = store.initStorm(db)
+	if err != nil {
+		return nil, err
+	}
+
+	store.checkAlreadyAddedAdmin()
+
+	initDone = true
+
+	return store, nil
+}
+
+func (s *Store) initStorm(db *storm.DB) (err error) {
 	//err = db.Init(&models.ServerTypes{})
-	err = db.Init(&models.Server{})
-	err = db.Init(&models.Stats{})
-	err = db.Init(&models.User{})
+	err = s.Orm.Init(&models.Server{})
+	err = s.Orm.Init(&models.Stats{})
+	err = s.Orm.Init(&models.User{})
 
 	return
 }
 
+func (s *Store) checkAlreadyAddedAdmin() {
+	var user models.User
+	err := s.Orm.One("Role", models.AdminRole, &user)
+	if err != nil {
+		if err == storm.ErrNotFound {
+			s.AdminAdded = false
+			return
+		}
+		logrus.Fatalln("Can't check if there is already an admin, try again or remove first_admin flag")
+		os.Exit(1)
+	}
+	s.AdminAdded = true
+}
+
 func (s *Store) Close() (err error) {
-	err = s.orm.Close()
+	err = s.Orm.Close()
 
 	return
 }
