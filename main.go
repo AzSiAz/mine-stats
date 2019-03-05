@@ -11,6 +11,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"mine-stats/handler"
 	"mine-stats/handler/middleware"
+	"mine-stats/public"
 	"mine-stats/store"
 	"net/http"
 	"os"
@@ -18,7 +19,7 @@ import (
 
 var (
 	prod       = flag.Bool("prod", false, "use it to be launch in production mode")
-	https       = flag.Bool("https", false, "use it to use https in production mode")
+	https      = flag.Bool("https", false, "use it to use https in production mode")
 	emailSSL   = flag.String("email_ssl", "stef@azsiaz.tech", "use it to change default email address to use for ssl certificate")
 	stagingSSL = flag.Bool("staging_ssl", false, "use a staging env on for certmagic lib on Let's Encrypt")
 	metrics    = flag.Bool("metrics", false, "expose a prometheus metrics endpoint")
@@ -35,7 +36,7 @@ func init() {
 		certmagic.Email = *emailSSL
 	}
 	if *prod {
-	//	For later
+		//	For later
 	}
 }
 
@@ -62,13 +63,13 @@ func setupJobs(st *store.Store) {
 		//println(srv.Name)
 		log.WithFields(log.Fields{
 			"server_name": srv.Name,
-			"url": srv.Url,
+			"url":         srv.Url,
 		}).Infoln("Doing something with server")
 	}
 	log.Infoln("Done loading jobs")
 }
 
-func setupRouter(st *store.Store) *echo.Echo{
+func setupRouter(st *store.Store) *echo.Echo {
 	r := echo.New()
 	h := handler.NewHandler(st, *prod)
 
@@ -81,9 +82,9 @@ func setupRouter(st *store.Store) *echo.Echo{
 	)
 
 	if *prod {
-		r.GET("/index.html", ServeIndex)
-		r.GET("/", ServeIndex)
-		r.GET("/*", echo.WrapHandler(Handler))
+		r.GET("/index.html", h.ServeIndex)
+		r.GET("/", h.ServeIndex)
+		r.GET("/*", echo.WrapHandler(public.Handler))
 	} else {
 		r.Static("/", "public/dist")
 	}
@@ -108,7 +109,6 @@ func setupRouter(st *store.Store) *echo.Echo{
 			srvApi.POST("", h.AddServer)
 			srvApi.PUT("", h.UpdateServer)
 			srvApi.DELETE("/:id", h.DeleteServer)
-
 		}
 	}
 
@@ -134,15 +134,4 @@ func openStore() *store.Store {
 	log.Info("Database opened")
 
 	return st
-}
-
-func ServeIndex(c echo.Context) error {
-	htmlb, err := ReadFile("index.html")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// convert to string
-	html := string(htmlb)
-	return c.HTML(http.StatusOK, html)
 }

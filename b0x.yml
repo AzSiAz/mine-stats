@@ -2,10 +2,10 @@
 # where fileb0x was run at!
 
 # default: main
-pkg: main
+pkg: public
 
 # destination
-dest: "./"
+dest: "./public"
 
 # gofmt
 # type: bool

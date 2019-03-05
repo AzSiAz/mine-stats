@@ -3,4 +3,4 @@ db.bbolt
 mine-stats
 db.storm
 dist/
-ab0x.go
+public/ab0x.go
