@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/labstack/echo/v4"
+	"mine-stats/jobs"
 	"mine-stats/models"
 	"mine-stats/protocol/minecraft"
 	"net/http"
@@ -86,7 +87,8 @@ func (h *Handler) AddServer(c echo.Context) error {
 		})
 	}
 
-	// TODO: Add server to job list
+	j := jobs.NewJob(srv)
+	jobs.AddJob(j)
 
 	return c.JSON(http.StatusOK, srv)
 }

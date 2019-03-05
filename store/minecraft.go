@@ -23,7 +23,7 @@ func (s *Store) AddServer(rawServer *minecraftProtocol.MinecraftServer, userID i
 	return
 }
 
-func (s *Store) AddStats(data *models.MinecraftStatus, serverID uint) (stats *models.Stats, err error) {
+func (s *Store) AddStats(data *models.MinecraftStatus, serverID int) (stats *models.Stats, err error) {
 	stats = &models.Stats{
 		Time:          time.Now(),
 		CurrentPlayer: data.PlayerInfo.Current,

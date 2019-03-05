@@ -12,6 +12,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"mine-stats/handler"
 	"mine-stats/handler/middleware"
+	"mine-stats/jobs"
 	"mine-stats/public"
 	"mine-stats/store"
 	"net/http"
@@ -56,11 +57,15 @@ func main() {
 	<-exit()
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
+
+	jobs.ShutDownJob()
+
 	if err := rtr.Shutdown(ctx); err != nil {
 		log.WithError(err).Fatalln()
 	}
 }
 
+// maybe https://github.com/jiansoft/robin later
 func setupJobs(st *store.Store) {
 	srvs, err := st.GetMinecraftServerList()
 	if err != nil {
@@ -68,10 +73,10 @@ func setupJobs(st *store.Store) {
 	}
 
 	for _, srv := range srvs {
-		log.WithFields(log.Fields{
-			"server_name": srv.Name,
-			"url":         srv.Url,
-		}).Infoln("Doing something with server")
+		j := jobs.NewJob(&srv)
+		jobs.AddJob(j)
+
+		<-time.After(500 * time.Millisecond)
 	}
 	log.Infoln("Done loading jobs")
 }

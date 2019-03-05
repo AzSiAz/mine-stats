@@ -11,7 +11,7 @@ import (
 //	slug
 //}
 
-type Role int8
+type Role uint8
 
 const (
 	_              = iota
@@ -45,5 +45,5 @@ type Stats struct {
 	MaxPlayer     int64
 	CurrentPlayer int64
 	Time          time.Time `storm:"index"`
-	ServerID      uint      `storm:"index"`
+	ServerID      int       `storm:"index"`
 }
