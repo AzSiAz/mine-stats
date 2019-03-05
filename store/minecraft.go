@@ -14,8 +14,7 @@ func (s *Store) AddServer(rawServer *minecraftProtocol.MinecraftServer, userID i
 		Timeout:   rawServer.Timeout,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
-		AddedBy: userID,
-
+		AddedBy:   userID,
 	}
 
 	err = s.orm.Save(server)
@@ -85,7 +84,7 @@ func (s *Store) DeleteServerByID(id int) error {
 		return err
 	}
 
-	err = s.orm.DeleteStruct(srv)
+	err = s.orm.DeleteStruct(&srv)
 	if err != nil {
 		return err
 	}
