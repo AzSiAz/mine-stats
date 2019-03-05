@@ -117,6 +117,7 @@ func setupRouter(st *store.Store) *echo.Echo {
 			srvApi.PUT("", h.UpdateServer)
 			srvApi.DELETE("/:id", h.DeleteServer)
 
+			//https://github.com/asdine/storm/issues/212
 			//statsApi := srvApi.Group("/stats")
 			//{
 			//

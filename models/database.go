@@ -13,9 +13,12 @@ import (
 
 type Role int8
 
-const AdminRole Role = 1
-const ModRole Role = 1
-const UserRole Role = 3
+const (
+	_              = iota
+	AdminRole Role = iota
+	ModRole
+	UserRole
+)
 
 type User struct {
 	ID        int    `storm:"id,increment"`
