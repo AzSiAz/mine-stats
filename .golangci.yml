@@ -1,0 +1,3 @@
+service:
+  prepare:
+    - go generate
