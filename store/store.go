@@ -1,10 +1,11 @@
 package store
 
 import (
-	"github.com/asdine/storm"
-	"github.com/sirupsen/logrus"
 	"mine-stats/models"
 	"os"
+
+	"github.com/asdine/storm"
+	"github.com/sirupsen/logrus"
 )
 
 type Store struct {
@@ -44,13 +45,22 @@ func NewStore(path string, firstAdmin bool) (*Store, error) {
 	return store, nil
 }
 
-func (s *Store) initStorm(db *storm.DB) (err error) {
+func (s *Store) initStorm(db *storm.DB) error {
 	//err = db.Init(&models.ServerTypes{})
-	err = s.Orm.Init(&models.Server{})
+	err := s.Orm.Init(&models.Server{})
+	if err != nil {
+		logrus.Fatalln("error init server model")
+	}
 	err = s.Orm.Init(&models.Stats{})
+	if err != nil {
+		logrus.Fatalln("error init stats model")
+	}
 	err = s.Orm.Init(&models.User{})
+	if err != nil {
+		logrus.Fatalln("error init user model")
+	}
 
-	return
+	return err
 }
 
 func (s *Store) checkAlreadyAddedAdmin() {

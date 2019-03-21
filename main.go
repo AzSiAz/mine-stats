@@ -5,20 +5,23 @@ package main
 import (
 	"context"
 	"flag"
-	"github.com/labstack/echo/v4"
-	echoMiddleware "github.com/labstack/echo/v4/middleware"
-	"github.com/mholt/certmagic"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
-	log "github.com/sirupsen/logrus"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
 	"mine-stats/handler"
 	"mine-stats/handler/middleware"
 	"mine-stats/jobs"
 	"mine-stats/public"
 	"mine-stats/store"
-	"net/http"
-	"os"
-	"os/signal"
-	"time"
+
+	"github.com/labstack/echo/v4"
+	echoMiddleware "github.com/labstack/echo/v4/middleware"
+	"github.com/mholt/certmagic"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -42,6 +45,7 @@ func init() {
 	}
 	if *prod {
 		//	For later
+		log.Info("Launching mine-stats in production mode")
 	}
 }
 
@@ -164,9 +168,8 @@ func openStore() *store.Store {
 }
 
 func exit() <-chan os.Signal {
-	ch := make(chan os.Signal)
-	signal.Notify(ch, os.Interrupt)
-	signal.Notify(ch, os.Kill)
+	ch := make(chan os.Signal, 1)
+	signal.Notify(ch, syscall.SIGTERM, syscall.SIGINT)
 
 	return ch
 }

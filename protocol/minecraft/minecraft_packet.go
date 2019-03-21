@@ -293,7 +293,7 @@ func UnCompress(data []byte) (*Packet, error) {
 func Compress(data []byte) []byte {
 	var b bytes.Buffer
 	w := zlib.NewWriter(&b)
-	w.Write(data)
+	w.Write(data) // nolint;
 	w.Close()
 	return b.Bytes()
 }

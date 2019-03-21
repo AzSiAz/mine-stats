@@ -103,7 +103,7 @@ func (sm *MinecraftServer) Query() (mc *models.MinecraftStatus, err error) {
 		return
 	}
 
-	defer sock.SetDeadline(time.Time{})
+	defer sock.SetDeadline(time.Time{}) // nolint;
 	err = sock.SetDeadline(time.Now().Add(sm.Timeout * time.Second))
 	if err != nil {
 		return

@@ -13,6 +13,7 @@ func (s *Store) AddServer(rawServer *minecraftProtocol.MinecraftServer, userID i
 		Port:      rawServer.Port,
 		Url:       rawServer.Address,
 		Timeout:   rawServer.Timeout,
+		Every:     rawServer.Every,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 		AddedBy:   userID,
@@ -23,17 +24,17 @@ func (s *Store) AddServer(rawServer *minecraftProtocol.MinecraftServer, userID i
 	return
 }
 
-func (s *Store) AddStats(data *models.MinecraftStatus, serverID int) (stats *models.Stats, err error) {
-	stats = &models.Stats{
+func (s *Store) AddStats(data *models.MinecraftStatus, serverID int) error {
+	stats := &models.Stats{
 		Time:          time.Now(),
 		CurrentPlayer: data.PlayerInfo.Current,
 		MaxPlayer:     data.PlayerInfo.Max,
 		ServerID:      serverID,
 	}
 
-	err = s.Orm.Save(stats)
+	err := s.Orm.Save(stats)
 
-	return
+	return err
 }
 
 func (s *Store) GetMinecraftServerList() ([]models.Server, error) {
@@ -56,15 +57,15 @@ func (s *Store) GetMinecraftServerListByUser(userID int) ([]models.Server, error
 	return servers, nil
 }
 
-func (s *Store) GetMinecraftServerForUserByID(userID, serverID int) (models.Server, error) {
-	var server models.Server
+func (s *Store) GetMinecraftServerForUserByID(userID, serverID int) ([]models.Server, error) {
+	var server []models.Server
 	err := s.Orm.Select(q.And(
 		q.Eq("ID", serverID),
 		q.Eq("AddedBy", userID),
 	)).Limit(1).Find(&server)
 
 	if err != nil {
-		return models.Server{}, err
+		return nil, err
 	}
 
 	return server, nil
@@ -132,10 +133,12 @@ func (s *Store) DeleteServerForUserByID(userID, serverID int) error {
 }
 
 func (s *Store) UpdateServer(userID, serverID int, newData models.Server) (models.Server, error) {
-	srv, err := s.GetMinecraftServerForUserByID(userID, serverID)
+	srvs, err := s.GetMinecraftServerForUserByID(userID, serverID)
 	if err != nil {
 		return models.Server{}, err
 	}
+
+	srv := srvs[0]
 
 	srv.Name = newData.Name
 	srv.Timeout = newData.Timeout

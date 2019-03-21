@@ -1,10 +1,11 @@
 package jobs
 
 import (
-	"fmt"
 	"github.com/sirupsen/logrus"
 	"mine-stats/models"
 	"mine-stats/protocol/minecraft"
+	"mine-stats/store"
+	"strings"
 	"time"
 )
 
@@ -16,6 +17,10 @@ var jobList []*Job
 
 func AddJob(j *Job) {
 	jobList = append(jobList, j)
+	logrus.WithFields(logrus.Fields{
+		"server": j.Server.Name,
+		"url": j.Server.Url,
+	}).Infoln("Launching new job")
 	go j.Loop()
 }
 
@@ -32,7 +37,7 @@ type Job struct {
 }
 
 func NewJob(server *models.Server) *Job {
-	ticker := time.NewTicker(server.Every)
+	ticker := time.NewTicker(server.Every * time.Second)
 	quit := make(chan struct{}, 1)
 
 	return &Job{
@@ -64,6 +69,26 @@ func (j *Job) Run() {
 				"server_name": j.Server.Name,
 				"url":         j.Server.Url,
 			}).Infoln()
+		return
 	}
-	println(fmt.Sprintf("%v+\n", status))
+	go j.LogRun(status)
+	err = store.GetStore().AddStats(status, j.Server.ID)
+	if err != nil {
+		logrus.WithError(err).Infoln("Error adding stats to db")
+	}
+}
+
+func (j *Job) LogRun(status *models.MinecraftStatus) {
+	var playerList []string
+
+	for _, player := range status.PlayerInfo.Players {
+		playerList = append(playerList, player.Name)
+	}
+
+	logrus.WithFields(logrus.Fields{
+		"name": j.Server.Name,
+		"max": status.PlayerInfo.Max,
+		"online": status.PlayerInfo.Current,
+		"players": strings.Join(playerList, ","),
+	}).Infoln()
 }

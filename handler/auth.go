@@ -1,10 +1,11 @@
 package handler
 
 import (
-	"github.com/labstack/echo/v4"
 	"mine-stats/models"
 	"net/http"
 	"time"
+
+	"github.com/labstack/echo/v4"
 )
 
 type AuthForm struct {
@@ -65,7 +66,7 @@ func (h *Handler) LogoutHandler(c echo.Context) error {
 	}
 
 	user := c.Get("user").(*models.User)
-	user, err := h.Store.UpdateUserSessionIDRemove(user)
+	_, err := h.Store.UpdateUserSessionIDRemove(user)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, Response{
 			"error":   err.Error(),
