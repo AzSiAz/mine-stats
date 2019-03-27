@@ -111,20 +111,20 @@ func setupRouter(st *store.Store) *echo.Echo {
 
 	api := r.Group("/api")
 	{
-		authApi := api.Group("/auth")
+		authAPI := api.Group("/auth")
 		{
-			authApi.POST("/signup", h.SignUpHandler)
-			authApi.POST("/login", h.LoginHandler)
-			authApi.GET("/logout", h.LogoutHandler, middleware.CheckAuth)
-			authApi.GET("/me", h.MeHandler, middleware.CheckAuth)
+			authAPI.POST("/signup", h.SignUpHandler)
+			authAPI.POST("/login", h.LoginHandler)
+			authAPI.GET("/logout", h.LogoutHandler, middleware.CheckAuth)
+			authAPI.GET("/me", h.MeHandler, middleware.CheckAuth)
 		}
-		srvApi := api.Group("/server", middleware.CheckAuth)
+		srvAPI := api.Group("/server", middleware.CheckAuth)
 		{
-			srvApi.GET("", h.ListOwnServer)
-			srvApi.GET("/:id", h.OneOwnServer)
-			srvApi.POST("", h.AddServer)
-			srvApi.PUT("", h.UpdateServer)
-			srvApi.DELETE("/:id", h.DeleteServer)
+			srvAPI.GET("", h.ListOwnServer)
+			srvAPI.GET("/:id", h.OneOwnServer)
+			srvAPI.POST("", h.AddServer)
+			srvAPI.PUT("", h.UpdateServer)
+			srvAPI.DELETE("/:id", h.DeleteServer)
 
 			//https://github.com/asdine/storm/issues/212
 			//statsApi := srvApi.Group("/stats")
@@ -132,14 +132,14 @@ func setupRouter(st *store.Store) *echo.Echo {
 			//
 			//}
 		}
-		admApi := api.Group("/admin", middleware.CheckAuth, middleware.CheckAdmin)
+		admAPI := api.Group("/admin", middleware.CheckAuth, middleware.CheckAdmin)
 		{
-			admApi.GET("/server", h.AdminListServer)
-			admApi.GET("/server/:id", h.AdminOneServer)
-			admApi.DELETE("/server/:id", h.AdminDeleteServer)
-			admApi.GET("/user", h.AdminListUser)
-			admApi.GET("/user/:id", h.AdminOneUser)
-			admApi.DELETE("/user/:id", h.AdminDeleteUser)
+			admAPI.GET("/server", h.AdminListServer)
+			admAPI.GET("/server/:id", h.AdminOneServer)
+			admAPI.DELETE("/server/:id", h.AdminDeleteServer)
+			admAPI.GET("/user", h.AdminListUser)
+			admAPI.GET("/user/:id", h.AdminOneUser)
+			admAPI.DELETE("/user/:id", h.AdminDeleteUser)
 		}
 	}
 
