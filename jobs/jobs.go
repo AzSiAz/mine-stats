@@ -1,12 +1,13 @@
 package jobs
 
 import (
-	"github.com/sirupsen/logrus"
 	"mine-stats/models"
-	"mine-stats/protocol/minecraft"
+	minecraftProtocol "mine-stats/protocol/minecraft"
 	"mine-stats/store"
 	"strings"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 type Runnable interface {
@@ -19,7 +20,7 @@ func AddJob(j *Job) {
 	jobList = append(jobList, j)
 	logrus.WithFields(logrus.Fields{
 		"server": j.Server.Name,
-		"url": j.Server.Url,
+		"url":    j.Server.Url,
 	}).Infoln("Launching new job")
 	go j.Loop()
 }
@@ -49,10 +50,10 @@ func NewJob(server *models.Server) *Job {
 
 func (j *Job) Loop() {
 	for {
-		j.Run()
 
 		select {
 		case <-j.ticker.C:
+			j.Run()
 		case <-j.quit:
 			j.ticker.Stop()
 			return
@@ -86,9 +87,10 @@ func (j *Job) LogRun(status *models.MinecraftStatus) {
 	}
 
 	logrus.WithFields(logrus.Fields{
-		"name": j.Server.Name,
-		"max": status.PlayerInfo.Max,
-		"online": status.PlayerInfo.Current,
-		"players": strings.Join(playerList, ","),
+		"timestamp": time.Now(),
+		"name":      j.Server.Name,
+		"max":       status.PlayerInfo.Max,
+		"online":    status.PlayerInfo.Current,
+		"players":   strings.Join(playerList, ","),
 	}).Infoln()
 }

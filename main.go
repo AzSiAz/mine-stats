@@ -35,6 +35,7 @@ var (
 
 func init() {
 	flag.Parse()
+	log.SetFormatter(&log.TextFormatter{FullTimestamp: true, DisableColors: true})
 
 	if *stagingSSL {
 		certmagic.CA = certmagic.LetsEncryptStagingCA
