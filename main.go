@@ -1,5 +1,3 @@
-//go:generate go run github.com/UnnoTed/fileb0x b0x.yml
-
 package main
 
 import (
@@ -14,7 +12,6 @@ import (
 	"mine-stats/handler"
 	"mine-stats/handler/middleware"
 	"mine-stats/jobs"
-	"mine-stats/public"
 	"mine-stats/store"
 
 	"github.com/labstack/echo/v4"
@@ -97,14 +94,6 @@ func setupRouter(st *store.Store) *echo.Echo {
 		echoMiddleware.Recover(),
 		echoMiddleware.Secure(),
 	)
-
-	if *prod {
-		r.GET("/index.html", h.ServeIndex)
-		r.GET("/", h.ServeIndex)
-		r.GET("/*", echo.WrapHandler(public.Handler))
-	} else {
-		r.Static("/", "public/dist")
-	}
 
 	if *metrics {
 		r.GET("/metrics", echo.WrapHandler(promhttp.Handler()))
